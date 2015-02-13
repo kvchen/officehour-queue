@@ -65,8 +65,7 @@ $(document).ready(function(){
         .fail(function () {
             toggleHelpForm();
             NProgress.done();
-            // Currently, the alert doesn't work and no messages are displayed
-            alert("Your help request could not be added. Possible reason: you have a pending request.");
+            swal("Failed!", "Your request has failed, check your internet", "error");
         });
     });
 });
