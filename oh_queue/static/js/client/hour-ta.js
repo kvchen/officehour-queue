@@ -43,14 +43,18 @@ var select = function (time_table, time) {
 
 // Currently using 2 arguments for demonstration purpose.
 var ta = select(timeta, 12);
+var taName = document.getElementById("Ta name");
 if (ta) {
-  var taName = document.getElementById("Ta name");
   if (ta.length < 2) {
     taName.innerHTML = "<b>" + ta.ta[0];
   } else {
     taName.innerHTML = "<b>" + ta.ta[0] + ' and ' + ta.ta[1];
   }
-  document.getElementById("time").innerHTML = d.toDateString();
   document.getElementById("loc").innerHTML = ta.loc;
+} else {
+  swal("Oops!", "There is currently no TA hours now", "error");
+  taName.innerHTML = "<b>" + "CS61Awesome Staff";
+  document.getElementById("loc").innerHTML = "Piazza";
 }
 
+document.getElementById("time").innerHTML = d.toDateString();

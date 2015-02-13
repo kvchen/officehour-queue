@@ -60,6 +60,7 @@ $(document).ready(function(){
         request.done(function(msg) {
             toggleHelpForm();
             NProgress.done();
+            swal("Success!", "Your request has been posted", "success");
         })
         .fail(function () {
             toggleHelpForm();
