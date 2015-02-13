@@ -20,15 +20,18 @@ var timeta = [
 ];
 
 // Function that select the time and TA names and location based on the time
-// on your local machine. The select function takes in 1 OR 2 arguments. If 
+// on your local machine. The select function takes in 1 OR 3 arguments. If 
 // one argument it will get the time from local machine, otherwise it used the
 // second time argument given.
 var d = new Date();
-var select = function (time_table, time) {
+var select = function (time_table, time, date) {
   var dayta = time_table[d.getDay() - 1];
+  if (arguments.length === 3) {
+    dayta = time_table[date];
+  }
   if (dayta) {
     for (var i = 0; i < dayta.length; i += 1) {
-      if (arguments.length === 2) {
+      if (arguments.length === 3) {
         if (dayta[i].time[0] === time) {
           return dayta[i];
         }
@@ -42,7 +45,7 @@ var select = function (time_table, time) {
 };
 
 // Currently using 2 arguments for demonstration purpose.
-var ta = select(timeta, 12);
+var ta = select(timeta);
 var taName = document.getElementById("Ta name");
 if (ta) {
   if (ta.length < 2) {
@@ -54,7 +57,7 @@ if (ta) {
 } else {
   swal("Oops!", "There is currently no TA hours now", "error");
   taName.innerHTML = "<b>" + "CS61Awesome Staff";
-  document.getElementById("loc").innerHTML = "Piazza";
+  document.getElementById("loc").innerHTML = "No room for Office Hour";
 }
 
 document.getElementById("time").innerHTML = d.toDateString();
