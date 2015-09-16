@@ -4,19 +4,21 @@ from flask import request, jsonify
 from datetime import datetime
 from pytz import timezone
 
-from oh_queue.entries.models import Entry
+from oh_queue.entries.models import Entry, SessionPassword
 from oh_queue.entries import constants as ENTRY
 
 from oh_queue.auth import requires_admin
 
-def return_payload(student):
+def return_payload(entry):
 	return {
-		'id': student.id, 
-		'name': student.name, 
-		'login': student.login, 
-		'add_date': format_datetime(student.add_date), 
-		'assignment': student.assignment, 
-		'question': student.question	
+		'id': entry.id, 
+		'name': entry.name, 
+		'sid': entry.sid, 
+		'add_date': format_datetime(entry.add_date), 
+		'location': entry.location, 
+		'assignment_type':entry.assignment_type,
+		'assignment':entry.assignment,
+		'question': entry.question	
 	}
 
 @app.route('/add_entry', methods=['POST'])
@@ -24,22 +26,31 @@ def add_entry():
 	"""Stores a new entry to the persistent database, and emits it to all
 	connected clients.
 	"""
+	# stored_password = SessionPassword.query.get(1)
 	# Extract attributes from the POST request
 	name = request.form['name']
-	login = request.form['login']
+	sid = request.form['sid']
+	location = request.form['location']
+	assignment_type = request.form['assignment_type']
 	assignment = request.form['assignment']
-	question = request.form['question']
+	question = request.form['question']	
+	# session_password = request.form['session_password']
+	# session_password = stored_password.password
 
-	active_entries = Entry.query.filter_by(status=ENTRY.PENDING).filter_by(login=login)
-	if active_entries and active_entries.count() > 0:
-		return jsonify(result='failure')
+
+	# active_entries = Entry.query.filter_by(status=ENTRY.PENDING).filter_by(sid=sid)
+	# if active_entries and active_entries.count() > 0:
+	# 	return jsonify(result='failure', error='you are already on the queue')
+
+	# if not stored_password or stored_password.password != session_password:
+	# 	return jsonify(result='failure', error='bad session password')
 	# Create a new entry and add it to persistent storage
-	new_entry = Entry(name, login, assignment, question)
-	db.session.add(new_entry)
+	entry = Entry(name, sid, location, assignment_type, assignment, question)
+	db.session.add(entry)
 	db.session.commit()
 
 	# Emit the new entry to all clients
-	socketio.emit('add_entry_response', return_payload(new_entry))
+	socketio.emit('add_entry_response', return_payload(entry))
 	return jsonify(result='success')
 
 @app.route('/view_entries', methods=['GET'])
@@ -99,6 +110,20 @@ def generate_report():
 		db.session.delete(request)
 		db.session.commit()
 	return jsonify(data_list)
+
+@app.route('/set_session_password', methods=['POST'])
+@requires_admin
+def set_session_password():
+	old_password = SessionPassword.query.get(1)
+	if old_password:
+		db.session.delete(old_password)
+		db.session.commit()
+	password = request.form['password']
+	new_password = SessionPassword(password)
+	db.session.add(new_password)
+	db.session.commit()
+	return jsonify(result="success", password=password)
+
 
 # Filters
 
